@@ -12,6 +12,7 @@ import {
   Title,
   Wrapper,
 } from "../components/auth-styles";
+import GithubButton from "../components/github-btn";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -92,6 +93,7 @@ export default function Login() {
       <Switcher>
         아직 회원이 아니신가요? <Link to="/create-account">회원가입</Link>
       </Switcher>
+      <GithubButton />
     </Wrapper>
   );
 }
