@@ -1,5 +1,8 @@
+import { addDoc, collection, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 import styled from "styled-components";
+import { auth, db, storage } from "../firebase";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 const Form = styled.form`
   display: flex;
@@ -70,14 +73,58 @@ const PostTweetForm = () => {
     }
   };
 
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const user = auth.currentUser;
+    if (isLaoding || !user || tweet === "" || tweet.length > 180) return;
+
+    try {
+      setLoading(true);
+      // firestore 에 tweet내용 올림
+      const doc = await addDoc(collection(db, "tweets"), {
+        tweet,
+        createdAt: Date.now(),
+        username: user.displayName || "Anonymous",
+        userId: user.uid,
+      });
+      // storage 에 이미지파일을 올림
+      if (file) {
+        if (file.size > 1024 * 1024) {
+          alert("파일 크기는 1MB 이하여야 합니다.");
+          setFile(null);
+          return;
+        }
+
+        const locationRef = ref(
+          storage,
+          `tweets/${user.uid}-${user.displayName}/${doc.id}`
+        );
+        const result = await uploadBytes(locationRef, file);
+        const url = await getDownloadURL(result.ref);
+        // 이미지 url을 firestore 에 저장
+        await updateDoc(doc, {
+          photo: url,
+        });
+      }
+      setTweet("");
+      setFile(null);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Form>
+    <Form onSubmit={onSubmit}>
       <TextArea
         rows={5}
         maxLength={180}
         value={tweet}
         placeholder="지금 알리고 싶은 180글자는?"
         onChange={onChange}
+        required
       />
       <AttachFileButton htmlFor="file">
         {file ? `${file.name.split(".")[0]} 선택완료` : "사진선택"}
