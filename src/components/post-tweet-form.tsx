@@ -69,7 +69,6 @@ const PostTweetForm = () => {
     const { files } = e.target;
     if (files && files.length === 1) {
       setFile(files[0]);
-      console.log(files[0]);
     }
   };
 
