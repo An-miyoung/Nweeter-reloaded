@@ -101,7 +101,7 @@ function Tweet({ tweet, photo, username, userId, id }: ITweet) {
   const [edit, setEdit] = useState(false);
   const [newTweet, setNewTweet] = useState("");
   const [newPhoto, setNewPhoto] = useState<File | null>(null);
-  const [imgFile, setImgFile] = useState("");
+  const [imgFile, setImgFile] = useState<string | ArrayBuffer | null>("");
   const user = auth.currentUser;
 
   const onEdit = () => {
@@ -202,7 +202,9 @@ function Tweet({ tweet, photo, username, userId, id }: ITweet) {
       </TweetColumn>
       {photo && (
         <PhotoColumn>
-          {newPhoto !== null ? (
+          {newPhoto !== null &&
+          imgFile !== null &&
+          typeof imgFile === "string" ? (
             <Photo src={imgFile} alt="photo" />
           ) : (
             <Photo src={photo} alt="photo" />
